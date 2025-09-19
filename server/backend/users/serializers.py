@@ -1,6 +1,7 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from .models import CustomUser, Profile
 from rest_framework import serializers
+from dj_rest_auth.serializers import LoginSerializer
 
 class EDURegisterSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(write_only=True)
@@ -29,7 +30,23 @@ class EDURegisterSerializer(serializers.ModelSerializer):
         user.is_active = False   # require verification
         user.save()
         return user
+    def save(self, request=None):
+        user = CustomUser.objects.create_user(
+            email=self.validated_data["email"],
+            password=self.validated_data["password1"], 
+            full_name=self.validated_data.get("full_name", "")
+        )
+        return user
 
+
+class EmailLoginSerializer(LoginSerializer):
+    username = None  # remove username
+    email = serializers.EmailField(required=True)
+
+    def validate(self, attrs):
+        # Map email -> username field expected by the parent
+        attrs['username'] = attrs.get('email')
+        return super().validate(attrs)
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:

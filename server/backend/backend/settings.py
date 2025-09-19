@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -151,8 +152,10 @@ ACCOUNT_EMAIL_VALIDATORS = [
 ]
 
 SITE_ID = 1
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]  # Vite
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5174"]  # Vite
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5174"]
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -162,5 +165,9 @@ REST_FRAMEWORK = {
 
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "users.serializers.EDURegisterSerializer"
+}
+
+REST_AUTH_SERIALIZERS = {
+    "LOGIN_SERIALIZER": "users.serializers.EmailLoginSerializer",
 }
 
