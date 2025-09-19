@@ -152,8 +152,8 @@ ACCOUNT_EMAIL_VALIDATORS = [
 ]
 
 SITE_ID = 1
-CORS_ALLOWED_ORIGINS = ["http://localhost:5174"]  # Vite
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5174"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5174", "http://localhost:5173"]  # Vite
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5174", "http://localhost:5173"]
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
