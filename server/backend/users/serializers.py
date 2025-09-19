@@ -1,22 +1,36 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
+from .models import CustomUser, Profile
 from rest_framework import serializers
-from .models import Profile
 
-class EDURegisterSerializer(RegisterSerializer):
-    full_name = serializers.CharField(required=False, allow_blank=True)
+class EDURegisterSerializer(serializers.ModelSerializer):
+    password1 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ["email", "full_name", "password1", "password2"]
 
     def validate_email(self, email):
-        email = super().validate_email(email)
         if not email.lower().endswith(".edu"):
             raise serializers.ValidationError("Please use your .edu email address.")
         return email
 
-    def save(self, request):
-        user = super().save(request)
-        user.first_name = self.data.get("full_name", "")
+    def validate(self, data):
+        if data["password1"] != data["password2"]:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
+
+    def create(self, validated_data):
+        user = CustomUser.objects.create_user(
+            email=validated_data["email"],
+            password=validated_data["password1"],
+            full_name=validated_data.get("full_name", "")
+        )
+        user.is_active = False   # require verification
         user.save()
         return user
-    
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
