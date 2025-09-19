@@ -1,11 +1,14 @@
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
+import Register from "./pages/auth/Register";
+import Login from "./pages/auth/Login";
 import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
 import PostItem from "./pages/PostItem";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 
 function App() {
@@ -14,10 +17,11 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Browse />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/signup" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/post" element={<PostItem />} />
+        <Route path="/verify/:token" element={<VerifyEmail />} />
+        <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /></ProtectedRoute>} />
+        <Route path="/post" element={<ProtectedRoute><PostItem /></ProtectedRoute>} />
       </Routes>
     </Router>
     )

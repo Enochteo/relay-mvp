@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     else localStorage.removeItem("refresh");
   }, [accessToken, refreshToken]);
   const login = async (email, password) => {
-    const res = await axios.post("http://localhost:8000/api/auth/login/", {
+    const res = await axios.post("http://localhost:8000/api/token/", {
       email,
       password,
     });
