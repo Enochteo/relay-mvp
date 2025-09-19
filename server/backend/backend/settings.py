@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "users",
     "items",
+    "users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
@@ -154,4 +155,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+}
+
+REST_AUTH_REGISTER_SERIALIZERS = {
+    "REGISTER_SERIALIZER": "users.serializers.EDURegisterSerializer"
 }
