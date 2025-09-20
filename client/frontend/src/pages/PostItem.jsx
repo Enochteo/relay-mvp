@@ -1,17 +1,32 @@
 import { useState } from "react";
+import api from "../api/axios";
 
 function PostItem() {
   const [form, setForm] = useState({ title: "", description: "", price: "" });
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: call API to create listing
-    console.log('posting', form);
+   try {
+      await api.post("items/", {
+        title: form.title,
+        description: form.description,
+        price: form.price,
+        category: "TEXTBOOK", // placeholder for now
+        condition: "GOOD", // placeholder
+        is_negotiable: true,
+      });
+      setMessage("Item posted successfully!");
+      setForm({ title: "", description: "", price: "" });
+    } catch (err) {
+      setMessage("Failed to post item.");
+    }
+
   };
 
-  return (
+return (
     <div className="app-shell container-center">
       <div className="card" style={{ width: 680 }}>
         <h2>Post a new item</h2>
@@ -30,9 +45,11 @@ function PostItem() {
             <button className="btn" type="submit">Publish</button>
           </div>
         </form>
+        {message && <p style={{ marginTop: 12 }}>{message}</p>}
       </div>
     </div>
   );
 }
 
 export default PostItem;
+

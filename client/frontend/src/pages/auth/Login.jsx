@@ -19,7 +19,7 @@ export default function Login() {
       await login(form.email, form.password);
       navigate("/dashboard");   
     } catch (err) {
-      setError("Invalid credentials");
+      setError("Invalid credentials. If you've registered Verify your email.");
     }
   };
 

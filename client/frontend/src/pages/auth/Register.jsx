@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -8,7 +9,7 @@ export default function Register() {
     password1: "",
     password2: "",
   });
-
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
@@ -19,6 +20,7 @@ export default function Register() {
     e.preventDefault();
     try {
       const res = await axios.post("http://localhost:8000/api/users/register/", form);
+      navigate("/dashboard"); 
       setMessage(res.data.detail);
     } catch (err) {
       setMessage("Error: " + JSON.stringify(err.response.data));

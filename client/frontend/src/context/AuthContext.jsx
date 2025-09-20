@@ -21,21 +21,25 @@ export const AuthProvider = ({ children }) => {
       email,
       password,
     });
-    setUser(res.data.user);
     setAccessToken(res.data.access);
     setRefreshToken(res.data.refresh);
   };
 
-   const logout = async () => {
-    await axios.post(
-      "http://localhost:8000/api/auth/logout/",
-      {},
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
-  };
+const logout = async () => {
+  try {
+    await axios.post("http://localhost:8000/api/logout/", {
+      refresh: refreshToken,
+    }, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+  } catch (err) {
+    console.error("Logout failed", err);
+  }
+
+  setUser(null);
+  setAccessToken(null);
+  setRefreshToken(null);
+};
 
   return (
     <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout }}>

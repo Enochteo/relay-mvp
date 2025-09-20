@@ -13,14 +13,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
     return (
-        <Router>
+    <Router>
       <Navbar />
       <Routes>
         <Route path="/" element={<Browse />} />
         <Route path="/signup" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify/:token" element={<VerifyEmail />} />
-        <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/post" element={<ProtectedRoute><PostItem /></ProtectedRoute>} />
       </Routes>
     </Router>
