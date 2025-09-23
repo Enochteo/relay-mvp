@@ -1,20 +1,24 @@
 import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from '../context/AuthContext'
 
 function Navbar() {
+  const { accessToken, logout } = useContext(AuthContext);
   return (
-    <header className="site-header card">
-      <div className="brand">
-        <div className="logo" aria-hidden />
-        <h1>Relay</h1>
-      </div>
-      <nav className="nav-actions">
-        <Link className="muted" to="/">Browse</Link>
-        <Link className="muted" to="/post">Post</Link>
-        <Link className="muted" to="/dashboard">Dashboard</Link>
-        <Link className="muted" to="/signup">Sign up</Link>
-        <Link className="muted" to="/login">Log in</Link>
-      </nav>
-    </header>
+    <nav>
+      <Link to="/">Browse</Link>
+      {accessToken ? (
+        <>
+          <Link to="/dashboard">Dashboard</Link>
+          <button onClick={logout} className="btn secondary">Logout</button>
+        </>
+      ) : (
+        <>
+          <Link to="/login">Login</Link>
+          <Link to="/signup">Signup</Link>
+        </>
+      )}
+    </nav>
   );
 }
 
