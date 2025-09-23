@@ -1,55 +1,76 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import api from "../api/axios";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from 'react-router-dom'
 
 function PostItem() {
-  const [form, setForm] = useState({ title: "", description: "", price: "" });
+  const { accessToken } = useContext(AuthContext);
+  const [form, setForm] = useState({ title: "", description: "", price: "", category: "TEXTBOOK", condition: "GOOD", is_negotiable: false,});
   const [message, setMessage] = useState("");
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
    try {
-      await api.post("items/", {
-        title: form.title,
-        description: form.description,
-        price: form.price,
-        category: "TEXTBOOK", // placeholder for now
-        condition: "GOOD", // placeholder
-        is_negotiable: true,
+      await api.post("/items/", { ...form },  {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setSuccess("Item posted successfully!");
+      setError("");
+      setForm({
+        title: "",
+        description: "",
+        price: "",
+        category: "OTHER",
+        condition: "GOOD",
+        is_negotiable: false,
       });
-      setMessage("Item posted successfully!");
-      setForm({ title: "", description: "", price: "" });
+      // redirect to dashboard
+      navigate("/dashboard");
     } catch (err) {
-      setMessage("Failed to post item.");
+      console.error("Failed to post item:", err);
+      setError("Error: Something went wrong");
     }
-
   };
 
 return (
     <div className="app-shell container-center">
       <div className="card" style={{ width: 680 }}>
         <h2>Post a new item</h2>
-        <p className="muted">Add details so others can find and contact you.</p>
-        <form className="form-grid" onSubmit={handleSubmit} style={{ marginTop: 12 }}>
-          <div className="form-row">
-            <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
-          </div>
-          <div className="form-row">
-            <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} rows={5} />
-          </div>
-          <div className="form-row">
-            <input name="price" placeholder="Price (USD)" value={form.price} onChange={handleChange} />
-          </div>
-          <div className="form-row">
-            <button className="btn" type="submit">Publish</button>
-          </div>
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
+          <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
+          <input name="price" placeholder="Price" value={form.price} onChange={handleChange} />
+          <select name="category" value={form.category} onChange={handleChange}>
+            <option value="TEXTBOOK">Textbook</option>
+            <option value="ELECTRONICS">Electronics</option>
+            <option value="FURNITURE">Furniture</option>
+          </select>
+          <select name="condition" value={form.condition} onChange={handleChange}>
+            <option value="NEW">New</option>
+            <option value="GOOD">Good</option>
+            <option value="FAIR">Fair</option>
+          </select>
+          <label>
+            <input type="checkbox" name="is_negotiable" checked={form.is_negotiable} onChange={handleChange} />
+            Negotiable?
+          </label>
+          <button className="btn" type="submit">Publish</button>
         </form>
-        {message && <p style={{ marginTop: 12 }}>{message}</p>}
+        {message && <p className="muted">{message}</p>}
       </div>
     </div>
   );
 }
 
 export default PostItem;
-

@@ -10,7 +10,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const res = await api.get("/items/", {
+        const res = await api.get("/items/my_items", {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },

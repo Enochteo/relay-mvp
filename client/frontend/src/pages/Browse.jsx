@@ -4,16 +4,11 @@ import api from "../api/axios";
 function Browse() {
   const [items, setItems] = useState([]);
 
+  
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const res = await api.get("items/");
-        setItems(res.data);
-      } catch (err) {
-        console.error("Failed to fetch items", err);
-      }
-    };
-    fetchItems();
+    api.get("/items/")
+      .then((res) => setItems(res.data))
+      .catch((err) => console.error("Failed to load items", err));
   }, []);
 
   return (
