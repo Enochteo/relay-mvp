@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import { useNavigate } from 'react-router-dom'
 
 function Browse() {
   const [items, setItems] = useState([]);
-
+  const navigate = useNavigate();
   
   useEffect(() => {
     api.get("/items/")
@@ -50,6 +51,7 @@ function Browse() {
                 }}
               >
                 <strong>${item.price}</strong>
+                <button className="btn" onClick={() => navigate(`/items/${item.id}`)}>View</button>
                 <button className="btn">Contact</button>
               </div>
             </div>

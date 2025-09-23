@@ -10,6 +10,13 @@ function PostItem() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
+
+  const [images, setImages] = useState([]);
+
+  const handleImageChange = (e) => {
+  setImages([...e.target.files]);
+};
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -18,10 +25,15 @@ function PostItem() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    Object.entries(form).forEach(([k, v]) => formData.append(k, v));
+    images.forEach((img) => formData.append("images", img));
+
    try {
-      await api.post("/items/", { ...form },  {
+      await api.post("/items/", formData,  {
           headers: {
             Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -65,6 +77,7 @@ return (
             <input type="checkbox" name="is_negotiable" checked={form.is_negotiable} onChange={handleChange} />
             Negotiable?
           </label>
+          <input type="file" multiple onChange={handleImageChange} />
           <button className="btn" type="submit">Publish</button>
         </form>
         {message && <p className="muted">{message}</p>}
