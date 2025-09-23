@@ -3,7 +3,7 @@ from .models import CustomUser, Profile
 from rest_framework import serializers
 from dj_rest_auth.serializers import LoginSerializer
 
-class EDURegisterSerializer(serializers.ModelSerializer):
+class EDURegisterSerializer(RegisterSerializer):
     password1 = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
 
@@ -11,6 +11,12 @@ class EDURegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ["email", "full_name", "password1", "password2"]
 
+    username = None
+
+    def get_cleaned_data(self):
+        data = super().get_cleaned_data()
+        data.pop("username", None)
+        return data
     def validate_email(self, email):
         if not email.lower().endswith(".edu"):
             raise serializers.ValidationError("Please use your .edu email address.")
@@ -29,15 +35,8 @@ class EDURegisterSerializer(serializers.ModelSerializer):
         )
         user.is_active = False   # require verification
         user.save()
-        return user
-    def save(self, request=None):
-        user = CustomUser.objects.create_user(
-            email=self.validated_data["email"],
-            password=self.validated_data["password1"], 
-            full_name=self.validated_data.get("full_name", "")
-        )
-        return user
-
+        return user       
+    
 
 class EmailLoginSerializer(LoginSerializer):
     username = None  # remove username
@@ -46,7 +45,13 @@ class EmailLoginSerializer(LoginSerializer):
     def validate(self, attrs):
         # Map email -> username field expected by the parent
         attrs['username'] = attrs.get('email')
-        return super().validate(attrs)
+        validated_data = super().validate(attrs)
+
+        user = self.user
+        if not user.is_active:
+            raise serializers.ValidationError("Please verify your email before logging in.")
+
+        return validated_data
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:

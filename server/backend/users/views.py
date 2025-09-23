@@ -24,7 +24,7 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        user = serializer.save(request=self.request)
 
         token = generate_verification_token(user)
         verification_link = f"http://localhost:8000/api/users/verify-email/{token}/"
@@ -70,3 +70,15 @@ class VerifyEmailView(APIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         })
+    
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
