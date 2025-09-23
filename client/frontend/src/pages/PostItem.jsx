@@ -55,32 +55,43 @@ function PostItem() {
     }
   };
 
-return (
+  return (
     <div className="app-shell container-center">
       <div className="card" style={{ width: 680 }}>
         <h2>Post a new item</h2>
-        <form className="form-grid" onSubmit={handleSubmit}>
-          <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
-          <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
-          <input name="price" placeholder="Price" value={form.price} onChange={handleChange} />
-          <select name="category" value={form.category} onChange={handleChange}>
-            <option value="TEXTBOOK">Textbook</option>
-            <option value="ELECTRONICS">Electronics</option>
-            <option value="FURNITURE">Furniture</option>
-          </select>
-          <select name="condition" value={form.condition} onChange={handleChange}>
-            <option value="NEW">New</option>
-            <option value="GOOD">Good</option>
-            <option value="FAIR">Fair</option>
-          </select>
-          <label>
-            <input type="checkbox" name="is_negotiable" checked={form.is_negotiable} onChange={handleChange} />
-            Negotiable?
-          </label>
-          <input type="file" multiple onChange={handleImageChange} />
-          <button className="btn" type="submit">Publish</button>
+        <form className="form-grid" onSubmit={handleSubmit} style={{ marginTop: 12 }}>
+          <div className="form-row">
+            <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
+          </div>
+          <div className="form-row">
+            <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} rows={4} />
+          </div>
+          <div className="form-row" style={{ display: 'flex', gap: 8 }}>
+            <input name="price" placeholder="Price" value={form.price} onChange={handleChange} style={{ flex: 1 }} />
+            <select name="category" value={form.category} onChange={handleChange} style={{ flex: 1 }}>
+              <option value="TEXTBOOK">Textbook</option>
+              <option value="ELECTRONICS">Electronics</option>
+              <option value="FURNITURE">Furniture</option>
+            </select>
+            <select name="condition" value={form.condition} onChange={handleChange} style={{ flex: 1 }}>
+              <option value="NEW">New</option>
+              <option value="GOOD">Good</option>
+              <option value="FAIR">Fair</option>
+            </select>
+          </div>
+          <div className="form-row" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input type="checkbox" name="is_negotiable" checked={form.is_negotiable} onChange={handleChange} />
+              Negotiable?
+            </label>
+            <input type="file" multiple onChange={handleImageChange} style={{ flex: 1 }} />
+          </div>
+          <div className="form-row" style={{ display: 'flex', gap: 8 }}>
+            <button className="btn" type="submit">Publish</button>
+            {error && <span className="muted" style={{ color: 'red' }}>{error}</span>}
+            {success && <span className="muted" style={{ color: 'green' }}>{success}</span>}
+          </div>
         </form>
-        {message && <p className="muted">{message}</p>}
       </div>
     </div>
   );

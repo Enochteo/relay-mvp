@@ -28,31 +28,25 @@ function Browse() {
           }}
         >
           {items.map((item) => (
-            <div key={item.id} className="card">
+            <div key={item.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div
                 style={{
                   height: 120,
-                  background:
-                    "linear-gradient(90deg,var(--accent), var(--accent-2))",
+                  background: item.images && item.images.length > 0
+                    ? `url(${item.images[0].image}) center center/cover no-repeat`
+                    : "linear-gradient(90deg,var(--accent), var(--accent-2))",
                   borderRadius: 8,
                   marginBottom: 12,
                 }}
               />
-              <h3 style={{ margin: "0 0 6px" }}>{item.title}</h3>
-              <p className="muted" style={{ margin: 0 }}>
-                {item.description}
-              </p>
-              <div
-                style={{
-                  marginTop: 10,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
+              <h3 style={{ margin: 0 }}>{item.title}</h3>
+              <p className="muted" style={{ margin: 0, minHeight: 32 }}>{item.description}</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                 <strong>${item.price}</strong>
-                <button className="btn" onClick={() => navigate(`/items/${item.id}`)}>View</button>
-                <button className="btn">Contact</button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="btn secondary" onClick={() => navigate(`/items/${item.id}`)}>View</button>
+                  <button className="btn">Contact</button>
+                </div>
               </div>
             </div>
           ))}

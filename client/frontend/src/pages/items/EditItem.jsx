@@ -10,7 +10,7 @@ function EditItem() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get(`/items/${id}/`).then(res => setForm(res.data));
+    api.get(`/items/${id}/`).then((res) => setForm(res.data));
   }, [id]);
 
   const handleChange = (e) => {
@@ -29,15 +29,29 @@ function EditItem() {
     navigate("/dashboard");
   };
 
-  if (!form) return <p>Loading...</p>;
+  if (!form) return <p className="muted">Loading...</p>;
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input name="title" value={form.title} onChange={handleChange} />
-      <textarea name="description" value={form.description} onChange={handleChange} />
-      <input name="price" value={form.price} onChange={handleChange} />
-      <button className="btn">Save</button>
-    </form>
+    <div className="app-shell container-center">
+      <div className="card" style={{ maxWidth: 600, width: '100%' }}>
+        <h2>Edit item</h2>
+        <form className="form-grid" onSubmit={handleSubmit} style={{ marginTop: 12 }}>
+          <div className="form-row">
+            <input name="title" value={form.title} onChange={handleChange} placeholder="Title" />
+          </div>
+          <div className="form-row">
+            <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" rows={4} />
+          </div>
+          <div className="form-row" style={{ display: 'flex', gap: 8 }}>
+            <input name="price" value={form.price} onChange={handleChange} placeholder="Price" style={{ flex: 1 }} />
+          </div>
+          <div className="form-row" style={{ display: 'flex', gap: 8 }}>
+            <button className="btn" type="submit">Save</button>
+            <button className="btn secondary" type="button" onClick={() => navigate(-1)}>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
