@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "items",
     "users.apps.UsersConfig",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
@@ -147,9 +148,8 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Only allow .edu emails
-ACCOUNT_EMAIL_VALIDATORS = [
-    lambda email: email.endswith(".edu")
-]
+ACCOUNT_EMAIL_VALIDATORS = ["users.validators.edu_email_validator"]
+
 
 SITE_ID = 1
 CORS_ALLOWED_ORIGINS = ["http://localhost:5174", "http://localhost:5173"]  # Vite
