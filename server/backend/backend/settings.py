@@ -171,3 +171,6 @@ REST_AUTH_SERIALIZERS = {
     "LOGIN_SERIALIZER": "users.serializers.EmailLoginSerializer",
 }
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
