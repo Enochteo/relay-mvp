@@ -12,7 +12,7 @@ class SellerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ["id", "email", "full_name"]
+        fields = ["id", "email", "full_name", "profile"]
 
 class ItemImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,6 +33,6 @@ class ItemSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "seller"]
 
     def create(self, validated_data):
-        request = self.context.get("request")
+        #seller = self.context["request"].user
         item = Item.objects.create(**validated_data)
         return item
