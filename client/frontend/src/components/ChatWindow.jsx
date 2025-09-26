@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { getMessages } from "../api/messaging";
 import { useWebSocket } from "../hooks/useWebSocket";
 import MessageInput from "./MessageInput";
+import { AuthContext } from "../context/AuthContext";
 
 const ChatWindow = ({ conversationId, token, otherUser }) => {
   const { messages, sendMessage } = useWebSocket(conversationId, token);
   const [history, setHistory] = useState([]);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     if (conversationId) {
@@ -21,29 +23,28 @@ const ChatWindow = ({ conversationId, token, otherUser }) => {
         Chat with {otherUser?.full_name || otherUser?.email || "User"}
       </h3>
       <div className="messages" style={{ flex: 1, overflowY: "auto", padding: "1rem" }}>
-        {allMessages.map((m, idx) => (
-          <div
-            key={idx}
-            style={{
-              textAlign: m.sender === "me" ? "right" : "left",
-              margin: "0.5rem 0",
-            }}
-          >
-            <p
-              style={{
-                display: "inline-block",
-                padding: "0.5rem 1rem",
-                borderRadius: "12px",
-                background: m.sender === "me" ? "#007bff" : "#eee",
-                color: m.sender === "me" ? "#fff" : "#000",
-              }}
-            >
-              {m.message || m.text}
-            </p>
-            <br />
-            <small>{m.timestamp}</small>
-          </div>
-        ))}
+        {allMessages.map((m, idx) => {
+          // Determine ownership: optimistic messages use sender === 'me'
+          const isMe = m.sender === "me" || (user && m.sender === user.id);
+          const text = m.message ?? m.text ?? "";
+          return (
+            <div key={idx} style={{ textAlign: isMe ? "right" : "left", margin: "0.5rem 0" }}>
+              <p
+                style={{
+                  display: "inline-block",
+                  padding: "0.5rem 1rem",
+                  borderRadius: "12px",
+                  background: isMe ? "#007bff" : "#eee",
+                  color: isMe ? "#fff" : "#000",
+                }}
+              >
+                {text}
+              </p>
+              <br />
+              <small>{m.timestamp}</small>
+            </div>
+          );
+        })}
       </div>
       <MessageInput onSend={sendMessage} />
     </div>

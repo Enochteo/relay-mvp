@@ -3,7 +3,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
-from channels.middleware.base import BaseMiddleware
+from django.contrib.auth.models import AnonymousUser
+from channels.middleware import BaseMiddleware
 
 User = get_user_model()
 
@@ -25,5 +26,11 @@ class JWTAuthMiddleware(BaseMiddleware):
         if "token" in query_params:
             token = query_params["token"][0]
 
-        scope["user"] = await get_user(token) if token else None
+        # Normalize to an actual user or AnonymousUser instance so downstream
+        # consumers can reliably check authentication.
+        # No-op: do not log tokens in production; keep middleware behavior quiet.
+
+        user = await get_user(token) if token else None
+        scope["user"] = user or AnonymousUser()
+
         return await super().__call__(scope, receive, send)

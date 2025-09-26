@@ -1,13 +1,13 @@
 from rest_framework import generics, permissions
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
-
-# Create your views here.
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from .models import Conversation
 from .serializers import ConversationSerializer
 from django.contrib.auth import get_user_model
+
+# Create your views here.
 
 User = get_user_model()
 

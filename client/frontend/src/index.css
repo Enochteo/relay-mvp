@@ -1,55 +1,59 @@
 :root {
-  --bg: #0f1724; /* deep navy */
-  --card: #0b1220;
-  --muted: #9aa4b2;
-  --accent: #7c5cff;
-  --accent-2: #33d6a6;
-  --glass: rgba(255,255,255,0.04);
-  --text: #e6eef6;
+  --bg: #0f1724;          /* deep navy background */
+  --card: #0b1220;        /* card background */
+  --muted: #9aa4b2;       /* muted text */
+  --accent: #7c5cff;      /* purple accent */
+  --accent-2: #33d6a6;    /* teal accent */
+  --glass: rgba(255, 255, 255, 0.04);
+  --text: #e6eef6;        /* light text */
+  --input-bg: rgba(255,255,255,0.02);
+  --input-border: rgba(255,255,255,0.04);
+  --placeholder: rgba(230,238,246,0.5);
   --radius: 12px;
+  --nav-height: 72px;     /* navbar height reserved at top */
 
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: light dark;
   color: var(--text);
   background-color: var(--bg);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* Light Theme */
+:root[data-theme="light"] {
+  --bg: #f7fafc;
+  --card: #ffffff;
+  --text: #0b1220;
+  --muted: #6b7280;
+  --input-bg: rgba(12,18,32,0.03);
+  --input-border: rgba(16,24,40,0.06);
+  --placeholder: rgba(11,18,32,0.45);
 }
 
-body {
+/* Global*/
+html, body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-image: linear-gradient(180deg, rgba(124,92,255,0.06), transparent 40%), radial-gradient(600px 300px at 10% 10%, rgba(51,214,166,0.04), transparent 20%);
+  background-color: var(--bg);
+  background-image: linear-gradient(180deg, rgba(124,92,255,0.06), transparent 40%),
+                    radial-gradient(600px 300px at 10% 10%, rgba(51,214,166,0.04), transparent 20%);
   -webkit-font-smoothing: antialiased;
+  color: var(--text);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* layout helpers */
-.app-shell {
-  max-width: 1100px;
-  margin: 2.5rem auto;
-  padding: 1.5rem;
-}
+/* reserve space at the top equal to the navbar so fixed header doesn't overlap content */
+body { padding-top: var(--nav-height); }
 
-.card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+a {
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: #535bf2;
 }
 
 h1 {
@@ -57,7 +61,58 @@ h1 {
   line-height: 1.1;
 }
 
-/* buttons */
+/* =========================
+   Forms & Inputs
+   ========================= */
+input, textarea, select {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text);
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.3s ease, border 0.3s ease;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--placeholder);
+}
+
+/* Improve input focus ring for accessibility */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(124,92,255,0.09);
+  border-color: var(--accent);
+}
+
+/* =========================
+   Utility Classes
+   ========================= */
+.muted { color: var(--muted); font-size: 0.9rem; }
+.container-center { display: flex; align-items: center; justify-content: center; }
+
+/* Forms layout used across pages */
+.form-grid { display: grid; gap: 12px; }
+.form-row { display: block; }
+.link-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; padding: 0; font-weight: 600; }
+
+/* Messages/chat layout */
+.messages-page { display: flex; gap: 12px; }
+.inbox { width: 30%; min-width: 220px; }
+.chat-window { flex: 1; display: flex; flex-direction: column; }
+
+/* small helper */
+.container-wide { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+
+/* Reusable grid layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -71,40 +126,23 @@ h1 {
   background: linear-gradient(90deg, var(--accent), #5a4bff);
   color: white;
   cursor: pointer;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 0.3s ease;
   box-shadow: 0 6px 18px rgba(92,64,255,0.12);
 }
-.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(92,64,255,0.14); }
-.btn.secondary { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.06); box-shadow: none; }
-
-input, textarea, select {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.04);
-  color: var(--text);
-  padding: 0.75rem 0.9rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  width: 100%;
-  box-sizing: border-box;
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(92,64,255,0.14);
 }
-input::placeholder { color: rgba(230,238,246,0.5); }
+.btn.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
 
-.form-row { margin-bottom: 1rem; text-align: left; }
-.form-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 480px; margin: 0 auto; }
+.btn.danger { background: linear-gradient(90deg,#ff6b6b,#ff4d4d); }
 
-.muted { color: var(--muted); font-size: 0.9rem; }
-
-.container-center { display: flex; align-items: center; justify-content: center; }
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f7fafc;
-    --card: #ffffff;
-    --text: #0b1220;
-    --muted: #6b7280;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  .btn { box-shadow: 0 8px 24px rgba(16,24,40,0.06); }
+/* Smooth transitions for theme toggle */
+body, .card, .site-header, .hero {
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }

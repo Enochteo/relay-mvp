@@ -16,8 +16,15 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True)
+    last_message = serializers.SerializerMethodField()
     participants = UserMiniSerializer(many=True, read_only=True)
 
     class Meta:
         model = Conversation
-        fields = ["id", "participants", "created_at", "messages"]
+        fields = ["id", "participants", "created_at", "messages", "last_message"]
+
+    def get_last_message(self, obj):
+        last = obj.messages.order_by("-timestamp").first()
+        if not last:
+            return None
+        return {"text": last.text, "timestamp": last.timestamp}

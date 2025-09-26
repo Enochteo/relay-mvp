@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Inbox from "../components/Inbox";
 import ChatWindow from "../components/ChatWindow";
@@ -8,6 +8,12 @@ const MessagesPage = () => {
   const { conversationId } = useParams();
   const { accessToken } = useContext(AuthContext);
   const [activeConversation, setActiveConversation] = useState(conversationId || null);
+
+  // Keep activeConversation in sync with the route param so clicking a
+  // conversation link or navigating directly to /messages/:id loads the chat.
+  useEffect(() => {
+    setActiveConversation(conversationId || null);
+  }, [conversationId]);
   const [activeUser, setActiveUser] = useState(null);
 
   const handleSelectConversation = (id, otherUser) => {

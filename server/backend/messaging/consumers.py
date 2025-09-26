@@ -1,18 +1,30 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
 from .models import Message, Conversation
 from django.contrib.auth.models import AnonymousUser
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
+        # normalize conversation id to int to avoid accidental string mismatches
+        raw_id = self.scope["url_route"]["kwargs"].get("conversation_id")
+        try:
+            self.conversation_id = int(raw_id)
+        except (TypeError, ValueError):
+            await self.close()
+            return
         self.room_group_name = f"chat_{self.conversation_id}"
 
-        if self.scope["user"] == AnonymousUser():
+        # If the middleware did not attach an authenticated user, close the
+        # connection. Middleware now sets an AnonymousUser when token is
+        # missing/invalid so check for that.
+        user = self.scope.get("user")
+        if user is None or getattr(user, "is_anonymous", True):
             await self.close()
-        else:
-            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-            await self.accept()
+            return
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
@@ -24,18 +36,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Save message
         conversation = await self.get_conversation()
-        message = Message.objects.create(conversation=conversation, sender=sender, text=message_text)
+        # security: ensure sender is a participant of this conversation
+        if not await self.is_participant(sender, conversation):
+            print(f"[ChatConsumer] Rejecting message: sender {getattr(sender,'id',None)} not participant of conversation {getattr(conversation,'id',None)}")
+            return
+        print(f"[ChatConsumer] Received message for conversation={self.conversation_id} sender={getattr(sender,'id',None)} text={message_text}")
+        message = await self.create_message(conversation, sender, message_text)
 
         # Broadcast
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "chat_message",
+                "conversation_id": conversation.id,  # ✅ fixed key
                 "message": message.text,
                 "sender": sender.id,
-                "timestamp": str(message.timestamp)
+                "timestamp": str(message.timestamp),
             }
         )
+        print(f"[ChatConsumer] Broadcast to {self.room_group_name}: conversation={conversation.id} sender={sender.id} message={message.text}")
+
+    @database_sync_to_async
+    def is_participant(self, user, conversation):
+        return conversation.participants.filter(id=getattr(user, 'id', None)).exists()
+
+    @database_sync_to_async
+    def create_message(self, conversation, sender, text):
+        return Message.objects.create(conversation=conversation, sender=sender, text=text)
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event))
