@@ -1,30 +1,45 @@
-#from django.shortcuts import render """"no rendering""""
-from rest_framework import generics, permissions, status
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
-
-from .models import Profile, CustomUser
-from .serializers import ProfileSerializer, EDURegisterSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.core.mail import send_mail
 from django.conf import settings
-from .utils import verify_token, generate_verification_token
 
-# Create your views here.
+from .models import Profile, CustomUser, Rating
+from .serializers import (
+    ProfileSerializer,
+    EDURegisterSerializer,
+    RatingSerializer,
+)
+from .utils import verify_token, generate_verification_token
+from django.db import models
+
 class MyProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProfileSerializer
 
     def get_object(self):
-        return Profile.objects.get(user=self.request.user)
-    
+        return get_object_or_404(Profile, user=self.request.user)
+
+
+class ProfileDetailView(generics.RetrieveAPIView):
+    """View a specific user's profile by ID"""
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.AllowAny]
+    lookup_field = "pk"
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = EDURegisterSerializer
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save(request=self.request)
+        user = serializer.save(request)
 
         token = generate_verification_token(user)
         verification_link = f"http://localhost:8000/api/users/verify-email/{token}/"
@@ -37,9 +52,10 @@ class RegisterView(generics.CreateAPIView):
 
         return Response(
             {"detail": "Please check your email to verify your account."},
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
-    
+
+
 class VerifyEmailView(APIView):
     def get(self, request, token, *args, **kwargs):
         email = verify_token(token)
@@ -60,17 +76,20 @@ class VerifyEmailView(APIView):
 
         # Issue JWT
         refresh = RefreshToken.for_user(user)
-        return Response({
-            "detail": "Email verified successfully.",
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "full_name": user.full_name,
-            },
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        })
-    
+        return Response(
+            {
+                "detail": "Email verified successfully.",
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "full_name": user.full_name,
+                },
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+        )
+
+
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -80,5 +99,26 @@ class LogoutView(APIView):
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception as e:
+        except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class RateProfileView(generics.CreateAPIView):
+    serializer_class = RatingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        profile = get_object_or_404(Profile, id=self.kwargs["pk"])
+        rating, created = Rating.objects.update_or_create(
+            rater=self.request.user,
+            profile=profile,
+            defaults={"score": self.request.data.get("score"), "comment": self.request.data.get("comment")},
+        )
+
+        # recalc aggregate
+        ratings = Rating.objects.filter(profile=profile)
+        profile.rating_avg = ratings.aggregate(models.Avg("score"))["score__avg"] or 0.0
+        profile.rating_count = ratings.count()
+        profile.save()
+
+        return rating

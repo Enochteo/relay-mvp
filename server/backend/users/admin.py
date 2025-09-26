@@ -24,6 +24,9 @@ class CustomUserAdmin(UserAdmin):
             "fields": ("email", "full_name", "password1", "password2", "is_staff", "is_superuser"),
         }),
     )
+    
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "graduation_year", "rating_avg", "rating_count")
 
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Profile)

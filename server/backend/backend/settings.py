@@ -174,3 +174,7 @@ REST_AUTH_SERIALIZERS = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+ACCOUNT_ADAPTER = "users.adapter.CustomAccountAdapter"
+REST_AUTH_REGISTER_SERIALIZERS = {
+    "REGISTER_SERIALIZER": "users.serializers.EDURegisterSerializer"
+}

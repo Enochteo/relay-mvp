@@ -19,6 +19,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
         return self.create_user(email, password, **extra_fields)
 
 
@@ -43,6 +44,8 @@ class Profile(models.Model):
     graduation_year = models.IntegerField(null=True, blank=True)
     rating_avg = models.FloatField(default=0.0)     # reviews
     rating_count = models.IntegerField(default=0)
+    major = models.CharField(max_length=100, blank=True)
+    bio = models.TextField(blank=True)
     # (major, bio, etc later)
     def __str__(self):
         return f"{self.user.email} profile"
@@ -53,3 +56,16 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
     else:
         instance.profile.save()
+
+class Rating(models.Model):
+    rater = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="given_ratings")
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="ratings")
+    score = models.IntegerField(choices=[(1, "⭐"), (2, "⭐⭐"), (3, "⭐⭐⭐"), (4, "⭐⭐⭐⭐"), (5, "⭐⭐⭐⭐⭐")])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("rater", "profile")  # one rating per user per profile
+
+    def __str__(self):
+        return f"{self.rater.email} rated {self.profile.user.email} ({self.score})"
