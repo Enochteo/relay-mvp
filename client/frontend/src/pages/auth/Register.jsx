@@ -6,6 +6,9 @@ export default function Register() {
   const [form, setForm] = useState({
     email: "",
     full_name: "",
+    major: "",
+    bio: "",
+    graduation_year: "",
     password1: "",
     password2: "",
   });
@@ -39,6 +42,15 @@ export default function Register() {
             <input name="full_name" placeholder="Full Name" onChange={handleChange} />
           </div>
           <div className="form-row">
+            <input type="text" name="major" placeholder="Major" onChange={handleChange} />
+          </div>
+          <div className="form-row">
+            <input type="text" name="bio" placeholder="Tell us about yourself" onChange={handleChange} />
+          </div>
+          <div className="form-row">
+            <input type="number" name="graduation_year" placeholder="Graduation Year (e.g. 2027)" onChange={handleChange} />
+          </div>
+          <div className="form-row">
             <input type="password" name="password1" placeholder="Password" onChange={handleChange} />
           </div>
           <div className="form-row">
@@ -48,8 +60,7 @@ export default function Register() {
             <button className="btn" type="submit">Sign Up</button>
           </div>
         </form>
-        {message && <p className="muted">{message}</p>}
-      </div>
+{message && <p className="muted" style={{ color: "red" }}>{message}</p>}      </div>
     </div>
   );
 }

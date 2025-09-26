@@ -10,6 +10,8 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ItemDetail from "./pages/items/ItemDetail";
 import EditItem from "./pages/items/EditItem";
+import Profile from "./pages/Profile";
+import RateProfile from "./pages/RateProfile";
 
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
         <Route path="/post" element={<ProtectedRoute><PostItem /></ProtectedRoute>} />
         <Route path="/items/:id" element={<ItemDetail />} />
         <Route path="/items/:id/edit" element={<EditItem />} />
+        <Route path="/profile/:id" element={<Profile />} />
+        <Route path="/profile/:id/rate" element={<RateProfile />} />
       </Routes>
     </Router>
     )
