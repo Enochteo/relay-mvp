@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "items",
     "users.apps.UsersConfig",
     "rest_framework_simplejwt.token_blacklist",
+    "channels",
+    "messaging"
 ]
 
 MIDDLEWARE = [
@@ -177,4 +179,13 @@ MEDIA_ROOT = BASE_DIR / "media"
 ACCOUNT_ADAPTER = "users.adapter.CustomAccountAdapter"
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "users.serializers.EDURegisterSerializer"
+}
+
+ASGI_APPLICATION = "backend.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+    },
 }

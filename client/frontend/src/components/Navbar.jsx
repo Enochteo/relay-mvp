@@ -14,6 +14,7 @@ function Navbar() {
       <nav className="nav-actions">
         <NavLink to="/" className={({isActive})=> isActive ? 'active' : ''}>Browse</NavLink>
         <NavLink to="/post" className={({isActive})=> isActive ? 'active' : ''}>Post</NavLink>
+        {accessToken && <NavLink to="/messages">Inbox</NavLink>}
         {accessToken ? (
           <>
             <NavLink to="/dashboard" className={({isActive})=> isActive ? 'active' : ''}>Dashboard</NavLink>
