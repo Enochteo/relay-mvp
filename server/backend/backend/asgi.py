@@ -13,10 +13,8 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")  # adjust project name
 
-# ✅ load Django first
 django_asgi_app = get_asgi_application()
 
-# now it’s safe to import project code
 from messaging.routing import websocket_urlpatterns
 from messaging.middleware import JWTAuthMiddleware
 
