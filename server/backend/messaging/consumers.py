@@ -3,6 +3,30 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import Message, Conversation
 from django.contrib.auth.models import AnonymousUser
+from datetime import datetime
+
+
+def format_timestamp(self, iso_timestamp: str) -> str:
+    """Convert ISO timestamp to human-readable format."""
+    try:
+        # Parse the ISO timestamp
+        dt = datetime.datetime.fromisoformat(iso_timestamp.replace("Z", "+00:00"))
+
+        # Convert to local time
+        dt = dt.replace(tzinfo=datetime.timezone.utc).astimezone()
+
+        # Format as "January 5th, 1999 5:00 PM"
+        day = dt.day
+        if 4 <= day <= 20 or 24 <= day <= 30:
+            suffix = "th"
+        else:
+            suffix = ["st", "nd", "rd"][day % 10 - 1]
+
+        formatted_date = dt.strftime(f"%B {day}{suffix}, %Y %I:%M %p")
+        return formatted_date
+    except Exception:
+        return formatted_date
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -48,7 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 "type": "chat_message",
-                "conversation_id": conversation.id,  # ✅ fixed key
+                "conversation_id": conversation.id, 
                 "message": message.text,
                 "sender": sender.id,
                 "timestamp": str(message.timestamp),
