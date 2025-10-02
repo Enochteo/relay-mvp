@@ -18,7 +18,7 @@ export const useWebSocket = (conversationId, token) => {
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
 
-      // ✅ Only accept if it's for this conversation
+      // Only accept if it's for this conversation
       if (data.conversation_id !== conversationId) return;
 
       setMessages((prev) => {
@@ -32,9 +32,28 @@ export const useWebSocket = (conversationId, token) => {
         }
         return [...prev, data];
       });
+
+      //  Broadcast message event to other components (like Inbox)
+      window.dispatchEvent(
+        new CustomEvent("newMessage", {
+          detail: {
+            ...data,
+            conversationId: data.conversation_id,
+            text: data.message,
+            timestamp: data.timestamp,
+          },
+        })
+      );
     };
 
-    ws.onclose = () => console.log("WebSocket closed");
+    ws.onclose = () => {
+      console.log("WebSocket closed");
+      setTimeout(() => {
+        socketRef.current = new WebSocket(
+          `ws://127.0.0.1:8000/ws/chat/${conversationId}/?token=${token}`
+        );
+      }, 2000);
+    };
 
     return () => ws.close();
   }, [conversationId, token]);
