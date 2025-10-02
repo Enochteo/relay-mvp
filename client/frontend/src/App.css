@@ -1,28 +1,201 @@
-/* app layout */
-.app-shell { max-width: 1100px; margin: 2.5rem auto; padding: 1.5rem; }
-
-.site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
-.brand { display: flex; align-items: center; gap: 0.75rem; }
-.brand .logo { height: 40px; width: 40px; border-radius: 8px; background: linear-gradient(90deg,var(--accent), #5a4bff); box-shadow: 0 6px 20px rgba(92,64,255,0.12); }
-.brand h1 { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text); }
-
-.site-header { position: sticky; top: 12px; z-index: 40; padding: 0.6rem 0.8rem; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 12px; }
-
-.nav-actions { display: flex; gap: 0.6rem; align-items: center; }
-.nav-actions a { color: var(--muted); text-decoration: none; padding: 0.45rem 0.6rem; border-radius: 8px; font-weight: 600; }
-.nav-actions a:hover { color: white; background: rgba(255,255,255,0.03); }
-.nav-actions a.active { color: white; background: linear-gradient(90deg,var(--accent),var(--accent-2)); box-shadow: 0 6px 18px rgba(92,64,255,0.12); }
-
-/* small screens: stack header */
-@media (max-width: 720px) {
-	.site-header { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-	.nav-actions { justify-content: space-between; flex-wrap: wrap; }
+.app-shell {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 1.5rem;
 }
 
-.card { padding: 1.25rem; border-radius: 12px; }
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  /* fixed header - spacing handled by body padding-top */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  z-index: 40;
+  padding: 0.6rem 0.8rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 12px;
+  transition: background 0.3s ease;
+}
 
-.center-pane { display: flex; align-items: center; justify-content: center; padding: 2rem 0; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.brand .logo {
+  height: 48px;
+  width: 48px;
+  border-radius: 12px;
+  position: relative;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 8px 28px rgba(92,64,255,0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: white;
+  font-size: 1.05rem;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
 
-.hero { text-align: left; color: var(--text); }
-.hero h1 { font-size: 2rem; margin: 0 0 0.5rem; }
-.hero p { color: var(--muted); margin: 0 0 1rem; }
+/* Logo SVG styling (separate/fallback for inline svg) */
+.logo-svg {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 10px;
+  transition: transform 240ms ease, box-shadow 240ms ease;
+  transform-origin: center;
+  will-change: transform;
+  display: block;
+}
+.logo-svg:hover { transform: translateY(-3px) scale(1.04); filter: drop-shadow(0 6px 14px rgba(28,24,48,0.45)); }
+.brand-text h1 { margin: 0; font-size: 1.05rem; letter-spacing: -0.01em; font-weight: 700; }
+.brand-text .muted { display: block; margin-top: 0.125rem; font-size: 0.75rem; color: var(--muted); }
+
+.brand .logo:hover {
+  transform: translateY(-4px) rotate(-6deg);
+  box-shadow: 0 18px 40px rgba(92,64,255,0.18);
+}
+
+.brand .logo .logo-accent {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  height: 14px;
+  width: 14px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 6px 14px rgba(51,214,166,0.12);
+}
+
+.nav-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.nav-actions a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.nav-actions a:hover {
+  color: white;
+  background: rgba(255,255,255,0.03);
+}
+.nav-actions a.active {
+  color: white;
+  background: linear-gradient(90deg,var(--accent),var(--accent-2));
+  box-shadow: 0 6px 18px rgba(92,64,255,0.12);
+}
+
+/* Navbar search */
+.nav-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+.nav-search input {
+  width: 200px;
+  max-width: 40vw;
+  padding: 0.5rem 0.65rem;
+}
+
+/* Mobile menu toggle */
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+/* Small screens */
+@media (max-width: 720px) {
+  .site-header { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+  .nav-actions { justify-content: space-between; flex-wrap: wrap; }
+  .nav-search { order: 3; width: 100%; }
+  .nav-toggle { display: inline-flex; }
+}
+
+  /* prevent main content from being pushed under header on very small screens */
+  @media (max-width: 720px) {
+    body { padding-top: calc(var(--nav-height) + 8px); }
+  }
+
+/* mobile: hide nav by default, show when .open */
+@media (max-width: 720px) {
+  .nav-actions { display: none; }
+  .nav-actions.open { display: flex; flex-direction: column; gap: 8px; }
+  .nav-actions.open a, .nav-actions.open button { width: 100%; text-align: left; }
+}
+
+.card {
+  background: var(--card);
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+}
+:root[data-theme="light"] .card {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.card-image {
+  height: 120px;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.seller {
+  font-size: 0.9rem;
+  margin: 4px 0;
+}
+
+.hero {
+  text-align: left;
+  color: var(--text);
+}
+.hero h1 {
+  font-size: 2rem;
+  margin: 0 0 0.5rem;
+}
+.hero p {
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+.center-pane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}

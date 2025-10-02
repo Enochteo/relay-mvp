@@ -1,16 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import api from "../api/axios";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { createConversation } from "../api/messaging";
 
 function Browse() {
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
-  
+  const { accessToken } = useContext(AuthContext);
+
   useEffect(() => {
     api.get("/items/")
       .then((res) => setItems(res.data))
       .catch((err) => console.error("Failed to load items", err));
   }, []);
+
+  const handleContact = async (sellerId) => {
+    if (!accessToken) {
+      navigate("/login");
+      return;
+    }
+    try {
+      const convo = await createConversation(sellerId, accessToken);
+      navigate(`/messages/${convo.id}`);
+    } catch (err) {
+      console.error("Failed to start conversation", err);
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -20,52 +36,46 @@ function Browse() {
       </div>
 
       <div style={{ marginTop: "1rem" }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-            gap: "1rem",
-          }}
-        >
+        <div className="grid">
           {items.map((item) => (
             <div key={item.id} className="card">
-  <div
-    style={{
-      height: 120,
-      background: item.images.length
-        ? `url(${item.images[0].image}) center center/cover no-repeat`
-        : "linear-gradient(90deg,var(--accent), var(--accent-2))",
-      borderRadius: 8,
-      marginBottom: 12,
-    }}
-  />
-  <h3 style={{ margin: 0 }}>{item.title}</h3>
-  <p className="muted" style={{ margin: 0 }}>{item.description}</p>
+              <div
+                className="card-image"
+                style={{
+                  background: item.images.length
+                    ? `url(${item.images[0].image}) center center/cover no-repeat`
+                    : "linear-gradient(90deg, var(--accent), var(--accent-2))",
+                }}
+              />
+              <h3>{item.title}</h3>
+              <p className="muted">{item.description}</p>
 
-  {/* Seller info */}
-  <p style={{ fontSize: "0.9rem", margin: "4px 0" }}>
-    Seller: 
-    <button 
-      className="link-btn" 
-      onClick={() => navigate(`/profile/${item.seller.id}`)}
-      style={{ marginLeft: 4 }}
-    >
-      {item.seller.full_name || item.seller.email}
-    </button>
-  </p>
-  <p className="muted">
-    ⭐ {item.seller.profile.rating_avg.toFixed(1)} ({item.seller.profile.rating_count})
-  </p>
+              {/* Seller info */}
+              <p className="seller">
+                Seller:
+                <button
+                  className="link-btn"
+                  onClick={() => navigate(`/profile/${item.seller.id}`)}
+                >
+                  {item.seller.full_name || item.seller.email}
+                </button>
+              </p>
+              <p className="muted">
+                ⭐ {item.seller.profile.rating_avg.toFixed(1)} ({item.seller.profile.rating_count})
+              </p>
 
-  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-    <strong>${item.price}</strong>
-    <div style={{ display: "flex", gap: 8 }}>
-      <button className="btn secondary" onClick={() => navigate(`/items/${item.id}`)}>View</button>
-      <button className="btn">Contact</button>
-    </div>
-  </div>
-</div>
-
+              <div className="card-footer">
+                <strong>${item.price}</strong>
+                <div className="btn-group">
+                  <button className="btn secondary" onClick={() => navigate(`/items/${item.id}`)}>
+                    View
+                  </button>
+                  <button className="btn" onClick={() => handleContact(item.seller.id)}>
+                    Contact
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
