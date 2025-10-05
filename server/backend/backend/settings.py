@@ -166,6 +166,15 @@ REST_FRAMEWORK = {
     ),
 }
 
+# JWT Settings - Extend token lifetime
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),  # Was 5 minutes, now 2 hours
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),   # 7 days
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "users.serializers.EDURegisterSerializer"
 }

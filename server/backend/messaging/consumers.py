@@ -35,6 +35,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             self.conversation_id = int(raw_id)
         except (TypeError, ValueError):
+            print(f"[ChatConsumer] Invalid conversation_id: {raw_id}")
             await self.close()
             return
         self.room_group_name = f"chat_{self.conversation_id}"
@@ -44,41 +45,58 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # missing/invalid so check for that.
         user = self.scope.get("user")
         if user is None or getattr(user, "is_anonymous", True):
+            print(f"[ChatConsumer] Unauthenticated user attempted to connect to conversation {self.conversation_id}")
             await self.close()
             return
 
+        print(f"[ChatConsumer] User {getattr(user, 'id', None)} connecting to conversation {self.conversation_id}")
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
+        print(f"[ChatConsumer] User {getattr(user, 'id', None)} successfully connected to conversation {self.conversation_id}")
 
     async def disconnect(self, close_code):
+        user = self.scope.get("user")
+        print(f"[ChatConsumer] User {getattr(user, 'id', None)} disconnecting from conversation {self.conversation_id} with code {close_code}")
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        message_text = data["message"]
-        sender = self.scope["user"]
+        try:
+            data = json.loads(text_data)
+            message_text = data.get("message", "").strip()
+            
+            if not message_text:
+                print(f"[ChatConsumer] Empty message received from user {getattr(self.scope.get('user'), 'id', None)}")
+                return
+                
+            sender = self.scope["user"]
 
-        # Save message
-        conversation = await self.get_conversation()
-        # security: ensure sender is a participant of this conversation
-        if not await self.is_participant(sender, conversation):
-            print(f"[ChatConsumer] Rejecting message: sender {getattr(sender,'id',None)} not participant of conversation {getattr(conversation,'id',None)}")
-            return
-        print(f"[ChatConsumer] Received message for conversation={self.conversation_id} sender={getattr(sender,'id',None)} text={message_text}")
-        message = await self.create_message(conversation, sender, message_text)
+            # Save message
+            conversation = await self.get_conversation()
+            # security: ensure sender is a participant of this conversation
+            if not await self.is_participant(sender, conversation):
+                print(f"[ChatConsumer] Rejecting message: sender {getattr(sender,'id',None)} not participant of conversation {getattr(conversation,'id',None)}")
+                return
+                
+            print(f"[ChatConsumer] Received message for conversation={self.conversation_id} sender={getattr(sender,'id',None)} text={message_text}")
+            message = await self.create_message(conversation, sender, message_text)
 
-        # Broadcast
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
+            # Broadcast to all participants in the conversation
+            broadcast_data = {
                 "type": "chat_message",
                 "conversation_id": conversation.id, 
                 "message": message.text,
                 "sender": sender.id,
                 "timestamp": str(message.timestamp),
             }
-        )
-        print(f"[ChatConsumer] Broadcast to {self.room_group_name}: conversation={conversation.id} sender={sender.id} message={message.text}")
+            
+            await self.channel_layer.group_send(self.room_group_name, broadcast_data)
+            print(f"[ChatConsumer] Broadcast to {self.room_group_name}: conversation={conversation.id} sender={sender.id} message={message.text}")
+            
+        except json.JSONDecodeError:
+            print(f"[ChatConsumer] Invalid JSON received from user {getattr(self.scope.get('user'), 'id', None)}")
+        except Exception as e:
+            print(f"[ChatConsumer] Error processing message: {e}")
+            # Could send error message back to client here if needed
 
     @database_sync_to_async
     def is_participant(self, user, conversation):
