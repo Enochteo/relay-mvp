@@ -3,15 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { getConversations } from "../api/messaging";
 import { AuthContext } from "../context/AuthContext";
 
-const Inbox = ({ token, onSelectConversation }) => {
-  const [conversations, setConversations] = useState([]);
+const Inbox = ({
+  token,
+  onSelectConversation,
+  conversations,
+  setConversations,
+}) => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    if (token) {
+    if (token && (!conversations || conversations.length === 0)) {
       getConversations(token).then(setConversations);
     }
-  }, [token]);
+  }, [token, conversations, setConversations]);
 
   // Listen for real-time message events from WebSocket
   useEffect(() => {
