@@ -3,30 +3,39 @@ import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { createConversation } from "../api/messaging";
+import ContactSellerBtn from "../components/ContactSellerBtn";
 
 function Browse() {
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, user } = useContext(AuthContext);
 
   useEffect(() => {
-    api.get("/items/")
+    api
+      .get("/items/")
       .then((res) => setItems(res.data))
       .catch((err) => console.error("Failed to load items", err));
   }, []);
 
-  const handleContact = async (sellerId) => {
-    if (!accessToken) {
-      navigate("/login");
-      return;
-    }
-    try {
-      const convo = await createConversation(sellerId, accessToken);
-      navigate(`/messages/${convo.id}`);
-    } catch (err) {
-      console.error("Failed to start conversation", err);
-    }
-  };
+  // const handleContact = async (sellerId) => {
+  //   if (!accessToken) {
+  //     navigate("/login");
+  //     return;
+  //   }
+
+  //   // Prevent users from contacting themselves
+  //   if (user && user.id === sellerId) {
+  //     alert("You cannot contact yourself!");
+  //     return;
+  //   }
+
+  //   try {
+  //     const convo = await createConversation(sellerId, accessToken);
+  //     navigate(`/messages/${convo.id}`);
+  //   } catch (err) {
+  //     console.error("Failed to start conversation", err);
+  //   }
+  // };
 
   return (
     <div className="app-shell">
@@ -59,20 +68,59 @@ function Browse() {
                 >
                   {item.seller.full_name || item.seller.email}
                 </button>
+                {user && user.id === item.seller.id && (
+                  <span
+                    style={{
+                      marginLeft: "8px",
+                      color: "#007bff",
+                      fontWeight: "bold",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    (You)
+                  </span>
+                )}
               </p>
               <p className="muted">
-                ⭐ {item.seller.profile.rating_avg.toFixed(1)} ({item.seller.profile.rating_count})
+                ⭐ {item.seller.profile.rating_avg.toFixed(1)} (
+                {item.seller.profile.rating_count})
               </p>
 
               <div className="card-footer">
                 <strong>${item.price}</strong>
                 <div className="btn-group">
-                  <button className="btn secondary" onClick={() => navigate(`/items/${item.id}`)}>
+                  <button
+                    className="btn secondary"
+                    onClick={() => navigate(`/items/${item.id}`)}
+                  >
                     View
                   </button>
-                  <button className="btn" onClick={() => handleContact(item.seller.id)}>
-                    Contact
-                  </button>
+                  {user && user.id === item.seller.id ? (
+                    <button
+                      className="btn"
+                      disabled
+                      style={{
+                        opacity: 0.5,
+                        cursor: "not-allowed",
+                        backgroundColor: "#6c757d",
+                      }}
+                      title="This is your own item"
+                    >
+                      Your Item
+                    </button>
+                  ) : (
+                    <ContactSellerBtn
+                      sellerId={item.seller.id}
+                      token={accessToken}
+                      user={user}
+                    />
+                    // <button
+                    //   className="btn"
+                    //   onClick={() => handleContact(item.seller.id)}
+                    // >
+                    //   Contact
+                    // </button>
+                  )}
                 </div>
               </div>
             </div>
