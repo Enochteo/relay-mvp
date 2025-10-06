@@ -73,3 +73,6 @@ htmlcov/
 *.out
 *.log
 
+deployment_config.md
+migration_plan.md
+gitignore
