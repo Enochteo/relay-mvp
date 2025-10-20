@@ -1,10 +1,12 @@
 import { NavLink } from "react-router-dom";
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { useUnreadMessages } from "../hooks/useUnreadMessages";
 import Logo from "./Logo";
 
 function Navbar() {
   const { accessToken, logout } = useContext(AuthContext);
+  const { unreadCount } = useUnreadMessages();
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -54,9 +56,6 @@ function Navbar() {
         </div>
 
         <div className="nav-right">
-          <div className="nav-search">
-            <input placeholder="Search items..." />
-          </div>
           <button
             className={`nav-toggle ${open ? "open" : ""}`}
             onClick={() => setOpen((v) => !v)}
@@ -89,7 +88,14 @@ function Navbar() {
               className={({ isActive }) => (isActive ? "active" : "")}
               onClick={handleNavClick}
             >
-              Messages
+              <span className="nav-item-content">
+                Messages
+                {unreadCount > 0 && (
+                  <span className="notification-badge">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </span>
             </NavLink>
           )}
           {accessToken ? (

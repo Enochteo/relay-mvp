@@ -6,6 +6,6 @@ router = DefaultRouter()
 router.register(r'items', ItemViewSet, basename='item')
 
 urlpatterns = [
-    # ... other urls
+    # Router URLs include search endpoints as actions
     path("api/", include(router.urls)),
 ]

@@ -1,4 +1,4 @@
-import './App.css';
+import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Register from "./pages/auth/Register";
@@ -22,7 +22,7 @@ function App() {
         <Route path="/" element={<Browse />} />
         <Route path="/signup" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/verify/:token" element={<VerifyEmail />} />
+        <Route path="/verify" element={<VerifyEmail />} />
         <Route
           path="/dashboard"
           element={

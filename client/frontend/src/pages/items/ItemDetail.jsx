@@ -36,7 +36,17 @@ function ItemDetail() {
                 key={img.id}
                 src={img.image}
                 alt={item.title}
-                style={{ width: 160, borderRadius: 8, objectFit: "cover" }}
+                style={{
+                  maxWidth: 240,
+                  maxHeight: 240,
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: 8,
+                  objectFit: "contain",
+                  background: "#f8f8f8",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  display: "block",
+                }}
               />
             ))}
         </div>

@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { getConversations } from "../api/messaging";
+import {
+  getConversationsWithUnread,
+  markConversationRead,
+} from "../api/messaging";
 import { AuthContext } from "../context/AuthContext";
 
 const Inbox = ({
@@ -13,7 +16,7 @@ const Inbox = ({
 
   useEffect(() => {
     if (token && (!conversations || conversations.length === 0)) {
-      getConversations(token).then(setConversations);
+      getConversationsWithUnread(token).then(setConversations);
     }
   }, [token, conversations, setConversations]);
 
@@ -33,8 +36,12 @@ const Inbox = ({
                 timestamp: message.timestamp,
                 sender: message.sender,
               },
-              // Mark as unread if message is from someone else
+              // Mark as unread and increment count if message is from someone else
               hasUnread: message.sender !== user?.id,
+              unread_count:
+                message.sender !== user?.id
+                  ? (conversation.unread_count || 0) + 1
+                  : conversation.unread_count || 0,
             };
           }
           return conversation;
@@ -64,14 +71,22 @@ const Inbox = ({
       {conversations.map((c) => {
         const otherUser = c.participants?.find((p) => p.id !== user?.id);
         const handleClick = () => {
-          // Clear unread status when conversation is clicked
+          // Mark conversation as read when clicked
+          if (c.unread_count > 0) {
+            markConversationRead(c.id, token).catch(console.error);
+          }
+
+          // Clear unread status locally
           setConversations((prev) =>
             prev.map((conversation) =>
               conversation.id === c.id
-                ? { ...conversation, hasUnread: false }
+                ? { ...conversation, unread_count: 0, hasUnread: false }
                 : conversation
             )
           );
+
+          // Dispatch event to update unread count
+          window.dispatchEvent(new CustomEvent("messageRead"));
 
           // update URL so ChatWindow and routing reflect the selected conversation
           navigate(`/messages/${c.id}`);
@@ -81,32 +96,24 @@ const Inbox = ({
         return (
           <div
             key={c.id}
-            style={{
-              padding: "0.5rem",
-              cursor: "pointer",
-              backgroundColor: c.hasUnread ? "#f0f8ff" : "transparent",
-              borderLeft: c.hasUnread
-                ? "4px solid #007bff"
-                : "4px solid transparent",
-              borderRadius: "4px",
-              marginBottom: "4px",
-            }}
+            className={`inbox-conversation ${
+              c.unread_count > 0 || c.hasUnread ? "unread" : ""
+            }`}
             onClick={handleClick}
           >
-            <p style={{ margin: "0 0 4px 0" }}>
-              <strong style={{ color: c.hasUnread ? "#007bff" : "inherit" }}>
-                {otherUser?.full_name || otherUser?.email}
-                {c.hasUnread && (
-                  <span style={{ color: "#007bff", marginLeft: "8px" }}>●</span>
-                )}
-              </strong>
-            </p>
-            <small
-              style={{
-                color: c.hasUnread ? "#333" : "#666",
-                fontWeight: c.hasUnread ? "500" : "normal",
-              }}
+            <div
+              className={`inbox-user-name ${
+                c.unread_count > 0 || c.hasUnread ? "unread" : ""
+              }`}
             >
+              <span>{otherUser?.full_name || otherUser?.email}</span>
+              {c.unread_count > 0 ? (
+                <span className="inbox-unread-badge">{c.unread_count}</span>
+              ) : (
+                c.hasUnread && <span className="inbox-unread-dot"></span>
+              )}
+            </div>
+            <small className="inbox-last-message">
               {c.last_message?.text ||
                 c.messages?.slice(-1)[0]?.text ||
                 "No messages yet"}
