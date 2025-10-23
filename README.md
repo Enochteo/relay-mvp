@@ -1,3 +1,3 @@
 ## Relay
 
-Frontend - https://relay-gsu-app.netlify.app
+React Frontend Deployed Link - https://gsu-relay-app.netlify.app/

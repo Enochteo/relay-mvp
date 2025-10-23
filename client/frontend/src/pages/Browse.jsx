@@ -206,13 +206,14 @@ function Browse() {
                   <h3>{item.title}</h3>
                   <p className="muted">{item.description}</p>
 
-                  {/* Seller info */}
+                  {/* Seller info - To do: add space*/}
                   <p className="seller">
                     Seller:
                     <button
                       className="link-btn"
                       onClick={() => navigate(`/profile/${item.seller.id}`)}
                     >
+                      {" "}
                       {item.seller.full_name || item.seller.email}
                     </button>
                     {user && user.id === item.seller.id && (
