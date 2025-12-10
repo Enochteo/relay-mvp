@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-v+u@o^e!ut(9p@yqn2uch#gk!cxndxu(mbrofprcp7ijf86#uj'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# Don't run with debug turned on in production!!!
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -151,7 +156,6 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Only allow .edu emails
 ACCOUNT_EMAIL_VALIDATORS = ["users.validators.edu_email_validator"]
@@ -195,3 +199,15 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Email Configuration (Gmail SMTP)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER", "noreply@relay.local")
+
+# Email verification settings
+EMAIL_VERIFICATION_URL = os.environ.get("EMAIL_VERIFICATION_URL", "http://localhost:5173/verify")

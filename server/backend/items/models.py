@@ -38,6 +38,17 @@ class Item(models.Model):
 class ItemImage(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="item_images/")
-
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    is_primary = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['is_primary', '-uploaded_at']
+    
     def __str__(self):
         return f"Image for {self.item.title}"
+    
+    def get_image_url(self):
+        """Get the full URL for the image"""
+        if self.image:
+            return self.image.url
+        return None

@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -30,7 +30,7 @@ class ItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.action == "my_items":
-            return Item.objects.filter(seller=self.request.user)
+            return Item.objects.filter(seller=self.request.user).prefetch_related('images')
         
         queryset = Item.objects.select_related('seller').prefetch_related('images')
         
@@ -80,14 +80,46 @@ class ItemViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(seller=self.request.user)#, context={"request": self.request})
+        try:
+            serializer.save(seller=self.request.user)
+        except serializers.ValidationError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def perform_update(self, serializer):
-        serializer.save()#context={"request": self.request})
+        try:
+            serializer.save()
+        except serializers.ValidationError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    def create(self, request, *args, **kwargs):
+        """Override create to handle image validation errors properly"""
+        try:
+            return super().create(request, *args, **kwargs)
+        except serializers.ValidationError as e:
+            return Response(
+                {"errors": e.detail},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    def update(self, request, *args, **kwargs):
+        """Override update to handle image validation errors properly"""
+        try:
+            return super().update(request, *args, **kwargs)
+        except serializers.ValidationError as e:
+            return Response(
+                {"errors": e.detail},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
     @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
     def my_items(self, request):
-        items = Item.objects.filter(seller=request.user).order_by("-created_at")
+        items = Item.objects.filter(seller=request.user).order_by("-created_at").prefetch_related('images')
         serializer = self.get_serializer(items, many=True)
         return Response(serializer.data)
     
