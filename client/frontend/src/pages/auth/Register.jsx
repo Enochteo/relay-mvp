@@ -26,7 +26,6 @@ export default function Register() {
         "http://localhost:8000/api/users/register/",
         form
       );
-      navigate("/login");
       setMessage(res.data.detail);
     } catch (err) {
       setMessage("Error: " + JSON.stringify(err.response.data));
