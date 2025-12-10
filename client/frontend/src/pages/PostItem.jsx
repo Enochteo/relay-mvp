@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { uploadImage } from "../supabase/supabaseClient";
 
 function PostItem() {
   const { accessToken } = useContext(AuthContext);
@@ -13,10 +14,9 @@ function PostItem() {
     condition: "GOOD",
     is_negotiable: false,
   });
-  const [message, setMessage] = useState("");
-
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const [images, setImages] = useState([]);
@@ -30,21 +30,74 @@ function PostItem() {
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
+  const uploadImagesToSupabase = async (imageFiles) => {
+    const uploadedUrls = [];
+    const errors = [];
+
+    for (const file of imageFiles) {
+      try {
+        const result = await uploadImage(file);
+        uploadedUrls.push(result.url);
+        console.log(`✓ Uploaded: ${file.name}`);
+      } catch (err) {
+        const errorMsg = `Failed to upload ${file.name}: ${err.message}`;
+        console.error(errorMsg);
+        errors.push(errorMsg);
+        // Continue uploading other files even if one fails
+      }
+    }
+
+    if (errors.length > 0 && uploadedUrls.length === 0) {
+      // All uploads failed
+      throw new Error(errors.join("; "));
+    }
+
+    if (errors.length > 0) {
+      // Some uploads failed but we have some successes
+      console.warn("Some images failed to upload:", errors);
+    }
+
+    return uploadedUrls;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(form).forEach(([k, v]) => formData.append(k, v));
-    images.forEach((img) => formData.append("images", img));
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
     try {
-      await api.post("/items/", formData, {
+      // Validate form
+      if (!form.title || !form.price) {
+        setError("Title and price are required");
+        setLoading(false);
+        return;
+      }
+
+      // Upload images to Supabase if provided
+      let imageUrls = [];
+      if (images.length > 0) {
+        imageUrls = await uploadImagesToSupabase(images);
+      }
+
+      // Create FormData for backend
+      const formData = new FormData();
+      Object.entries(form).forEach(([k, v]) => formData.append(k, v));
+
+      // Append uploaded image files (backend will store them)
+      images.forEach((img) => {
+        formData.append("images", img);
+      });
+
+      // Send to backend
+      const response = await api.post("/items/", formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "multipart/form-data",
         },
       });
+
       setSuccess("Item posted successfully!");
-      setError("");
       setForm({
         title: "",
         description: "",
@@ -53,11 +106,15 @@ function PostItem() {
         condition: "GOOD",
         is_negotiable: false,
       });
-      // redirect to dashboard
-      navigate("/dashboard");
+      setImages([]);
+
+      // Redirect to dashboard
+      setTimeout(() => navigate("/dashboard"), 1500);
     } catch (err) {
       console.error("Failed to post item:", err);
-      setError("Error: Something went wrong");
+      setError(err.message || "Failed to post item. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,8 +196,8 @@ function PostItem() {
             />
           </div>
           <div className="form-row" style={{ display: "flex", gap: 8 }}>
-            <button className="btn" type="submit">
-              Publish
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? "Publishing..." : "Publish"}
             </button>
             {error && (
               <span className="muted" style={{ color: "red" }}>
