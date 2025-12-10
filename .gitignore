@@ -59,6 +59,7 @@ Thumbs.db
 *.sql
 *.dump
 *.backup
+dump.rdb
 
 
 .coverage
@@ -73,7 +74,68 @@ htmlcov/
 *.out
 *.log
 
+# =========================
+# Documentation & Config
+# =========================
 deployment_config.md
 migration_plan.md
 gitignore
 suggestions.md
+DJANGO_EMAIL_VERIFICATION.md
+SUPABASE_RLS_FIX_QUICK_GUIDE.md
+EMAIL_SETUP_QUICK_START.md
+BACKEND_IMAGE_HANDLING.md
+!README.md
+!docs/
+
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.local
+.env.*.local
+.env.*.example
+
+# =========================
+# IDE & Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# =========================
+# OS & Temporary
+# =========================
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+*~
+
+# =========================
+# Database & Cache
+# =========================
+*.sqlite3
+db.sqlite3
+dump.rdb
+redis-dump.rdb
+
+# =========================
+# Package Managers
+# =========================
+package-lock.json
+yarn.lock
+poetry.lock
+Pipfile.lock
+
+# =========================
+# Build & Dist
+# =========================
+/dist/
+/build/
+/.tern-port
+client/frontend/node_modules/
+client/frontend/dist/
